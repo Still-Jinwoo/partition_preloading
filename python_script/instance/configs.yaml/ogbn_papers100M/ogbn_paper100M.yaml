@@ -1,0 +1,106 @@
+model:
+  learning_task: NODE_CLASSIFICATION
+  encoder:
+    use_incoming_nbrs: true
+    use_outgoing_nbrs: true
+    layers:
+      - train_neighbor_sampling:
+          use_hashmap_sets: true
+          type: UNIFORM
+          options:
+            max_neighbors: 15
+        eval_neighbor_sampling:
+          use_hashmap_sets: true
+          type: UNIFORM
+          options:
+            max_neighbors: 15
+        init:
+          type: GLOROT_NORMAL
+        type: GRAPH_SAGE
+        options:
+          input_dim: 128
+          output_dim: 256
+          aggregator: MEAN
+        bias: true
+        bias_init:
+          type: ZEROS
+        activation: RELU
+      - train_neighbor_sampling:
+          type: UNIFORM
+          options:
+            max_neighbors: 10
+        eval_neighbor_sampling:
+          type: UNIFORM
+          options:
+            max_neighbors: 10
+        init:
+          type: GLOROT_NORMAL
+        type: GRAPH_SAGE
+        options:
+          input_dim: 256
+          output_dim: 256
+          aggregator: MEAN
+        bias: true
+        bias_init:
+          type: ZEROS
+        activation: RELU
+      - train_neighbor_sampling:
+          type: UNIFORM
+          options:
+            max_neighbors: 5
+        eval_neighbor_sampling:
+          type: UNIFORM
+          options:
+            max_neighbors: 5
+        init:
+          type: GLOROT_NORMAL
+        type: GRAPH_SAGE
+        options:
+          input_dim: 256
+          output_dim: 172
+          aggregator: MEAN
+        bias: true
+        bias_init:
+          type: ZEROS
+        activation: NONE
+    optimizer:
+      type: ADAM
+      options:
+        learning_rate: 0.003
+storage:
+  device_type: cuda
+  dataset:
+    base_directory: datasets/ogbn_papers100m/
+    num_edges: 1615685872
+    num_nodes: 111059956
+    num_relations: 1
+    num_train: 1207179
+    num_valid: 125265
+    num_test: 214338
+    feature_dim: 128
+    num_classes: 172
+  edges:
+    type: FLAT_FILE
+  nodes:
+    type: HOST_MEMORY
+  features:
+    type: PARTITION_BUFFER
+    options:
+      num_partitions: 2048  # 파티션 수 줄이기
+      buffer_capacity: 2048  # 버퍼 용량 줄이기
+      prefetching: false
+      fine_to_coarse_ratio: 646
+      num_cache_partitions: 0
+      node_partition_ordering: SEQUENTIAL
+  prefetch: false
+  shuffle_input: true
+  full_graph_evaluation: true
+training:
+  batch_size: 256  # 배치 크기 줄이기
+  num_epochs: 10
+  pipeline:
+    sync: false
+    staleness_bound: 8
+    batch_host_queue_size: 8
+    batch_device_queue_size: 8
+   
